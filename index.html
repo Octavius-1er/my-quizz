@@ -834,8 +834,8 @@ textarea { min-height: 72px; }
       <div class="intro-box" id="instr-text"></div>
       <div class="sym-table">
         <div class="sym-row s0">
-          <div class="sym-icon">○</div>
-          <div><div class="sym-pts">0 pt</div><div class="sym-lbl">Never</div></div>
+          <div class="sym-icon">x</div>
+          <div><div class="sym-pts">1 pt</div><div class="sym-lbl">Never</div></div>
         </div>
         <div class="sym-row s1">
           <div class="sym-icon">□</div>
@@ -846,7 +846,7 @@ textarea { min-height: 72px; }
           <div><div class="sym-pts">2 pts</div><div class="sym-lbl">Often</div></div>
         </div>
         <div class="sym-row s3">
-          <div class="sym-icon">×</div>
+          <div class="sym-icon">○</div>
           <div><div class="sym-pts">3 pts</div><div class="sym-lbl">Always</div></div>
         </div>
       </div>
@@ -985,7 +985,7 @@ let CONFIG = {
   }
 };
 
-const SYMS = ["○","□","◇","×"];
+const SYMS = ["x","□","◇","○"];
 const PTS  = [0, 1, 2, 3];
 let curQ = 0, totalScore = 0;
 
@@ -1141,7 +1141,7 @@ function renderQEditors() {
       </div>
       <div class="field-label">Question text</div>
       <textarea data-qi="${i}" data-field="text" rows="2">${q.text}</textarea>
-      <div class="field-label">Answer labels (○ □ ◇ ×)</div>
+      <div class="field-label">Answer labels (x □ ◇ ○)</div>
       <div class="ans-editor">
         ${SYMS.map((sym,j) => `
           <div class="ans-field">
