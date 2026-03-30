@@ -805,7 +805,7 @@ textarea { min-height: 72px; }
           <div class="qi">🌿</div>
           <div style="flex:1">
             <div class="qt" id="home-quiz-title">Lifestyle Quiz</div>
-            <div class="qs" id="home-quiz-sub">5 questions · discover your habits</div>
+            <div class="qs" id="home-quiz-sub">7 questions · discover your habits</div>
           </div>
           <span class="qa">→</span>
         </div>
@@ -968,16 +968,45 @@ textarea { min-height: 72px; }
 <script>
 let CONFIG = {
   title: "Lifestyle Quiz",
-  subtitle: "5 questions · discover your habits",
-  instructions: "Answer honestly — there are no right or wrong answers!\nFor each question pick how often the statement applies to you.\nThe symbols go from ○ (never) to × (always).",
-  classAverage: 8,
+  subtitle: "7 questions · discover your habits",
+  instructions: "Answer honestly — there are no right or wrong answers!\nFor each question pick how often the statement applies to you.\nThe symbols go from × (never) to ○ (always).",
+  classAverage: 14,
+
+  // ─────────────────────────────────────────────────────────────────
+  // QUESTIONS — modifier le texte et les 4 options de chaque question
+  // Les options correspondent aux symboles : x (0pt) □ (1pt) ◇ (2pt) ○ (3pt)
+  // ─────────────────────────────────────────────────────────────────
   questions: [
-    { text: "I drink at least 1.5L of water per day.", answers: ["Never","Sometimes","Often","Always"] },
-    { text: "I exercise or do a physical activity.", answers: ["Never","Sometimes","Often","Always"] },
-    { text: "I get 7–9 hours of sleep each night.", answers: ["Never","Sometimes","Often","Always"] },
-    { text: "I eat fruits and vegetables every day.", answers: ["Never","Sometimes","Often","Always"] },
-    { text: "I take time to relax and do something I enjoy.", answers: ["Never","Sometimes","Often","Always"] }
+    {
+      text: "I drink at least 1.5L of water per day.",
+      answers: ["Never", "Rarely", "Most days", "Every day"]
+    },
+    {
+      text: "I exercise or do a physical activity.",
+      answers: ["Never", "1× a week", "2–3× a week", "Daily"]
+    },
+    {
+      text: "I get 7–9 hours of sleep each night.",
+      answers: ["Almost never", "Sometimes", "Usually", "Always"]
+    },
+    {
+      text: "I eat fruits and vegetables every day.",
+      answers: ["Never", "A few times/week", "Most days", "Every day"]
+    },
+    {
+      text: "I take time to relax and do something I enjoy.",
+      answers: ["Never", "Rarely", "Often", "Every day"]
+    },
+    {
+      text: "I limit my screen time before going to bed.",
+      answers: ["Never", "Rarely", "Often", "Always"]
+    },
+    {
+      text: "I feel energised and positive during the day.",
+      answers: ["Almost never", "Sometimes", "Most of the time", "Always"]
+    }
   ],
+
   advice: {
     low:  "Your lifestyle needs some attention. Start small: try drinking more water or going to bed 30 minutes earlier each night. Small habits add up!",
     mid:  "You have a decent base! There are a few areas where you could improve. Identify what you do well and build on it step by step.",
@@ -1064,9 +1093,9 @@ function showResult() {
   document.getElementById("r-sub").textContent   = `out of ${maxPts} points`;
 
   let grade, chipClass;
-  if (pct >= .7)      { grade = "Grade A"; chipClass = "gA"; }
-  else if (pct >= .4) { grade = "Grade B"; chipClass = "gB"; }
-  else                { grade = "Grade C"; chipClass = "gC"; }
+  if (totalScore >= 16)     { grade = "Grade A"; chipClass = "gA"; }
+  else if (totalScore >= 8) { grade = "Grade B"; chipClass = "gB"; }
+  else                      { grade = "Grade C"; chipClass = "gC"; }
 
   const chip = document.getElementById("r-chip");
   chip.textContent = grade;
@@ -1077,8 +1106,8 @@ function showResult() {
   badge.className   = "advice-grade-badge " + chipClass;
 
   let advText;
-  if      (pct < 0.34) advText = CONFIG.advice.low;
-  else if (pct < 0.67) advText = CONFIG.advice.mid;
+  if      (totalScore <= 7)  advText = CONFIG.advice.low;
+  else if (totalScore <= 15) advText = CONFIG.advice.mid;
   else                 advText = CONFIG.advice.high;
   document.getElementById("r-advice").textContent = advText;
 
@@ -1120,11 +1149,9 @@ function loadEditPanel() {
   document.getElementById("e-adv-high").value  = CONFIG.advice.high;
 
   const maxPts = CONFIG.questions.length * 3;
-  const lo = Math.floor(maxPts * 0.33);
-  const hi = Math.floor(maxPts * 0.66);
-  document.getElementById("adv-label-low").textContent  = `Low score  (0 – ${lo} pts)`;
-  document.getElementById("adv-label-mid").textContent  = `Mid score  (${lo+1} – ${hi} pts)`;
-  document.getElementById("adv-label-high").textContent = `High score (${hi+1} – ${maxPts} pts)`;
+  document.getElementById("adv-label-low").textContent  = `Low score  (0 – 7 pts)`;
+  document.getElementById("adv-label-mid").textContent  = `Mid score  (8 – 15 pts)`;
+  document.getElementById("adv-label-high").textContent = `High score (16 – 21 pts)`;
   renderQEditors();
 }
 
@@ -1157,12 +1184,6 @@ function addQuestion() {
   CONFIG.questions.push({ text: "New question...", answers: ["Never","Sometimes","Often","Always"] });
   renderQEditors();
   document.querySelectorAll(".q-editor").at(-1).scrollIntoView({ behavior:"smooth", block:"center" });
-  const maxPts = CONFIG.questions.length * 3;
-  const lo = Math.floor(maxPts * 0.33);
-  const hi = Math.floor(maxPts * 0.66);
-  document.getElementById("adv-label-low").textContent  = `Low score  (0 – ${lo} pts)`;
-  document.getElementById("adv-label-mid").textContent  = `Mid score  (${lo+1} – ${hi} pts)`;
-  document.getElementById("adv-label-high").textContent = `High score (${hi+1} – ${maxPts} pts)`;
 }
 
 function deleteQuestion(i) {
