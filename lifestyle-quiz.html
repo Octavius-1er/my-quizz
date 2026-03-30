@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lifestyle Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --surface: #181818;
+    --surface2: #222222;
+    --border: #2e2e2e;
+    --text: #f0ece4;
+    --muted: #7a7570;
+    --accent: #c8f060;
+    --accent2: #60d4c8;
+    --warn: #f0a060;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Instrument Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 680px;
+    padding: 48px 24px 80px;
+  }
+
+  /* ── TITLE ── */
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: -1.5px;
+    line-height: 1;
+    margin-bottom: 48px;
+  }
+  .page-title em { color: var(--accent); font-style: normal; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px;
+    animation: rise .45s cubic-bezier(.2,.8,.2,1) both;
+  }
+  @keyframes rise {
+    from { opacity:0; transform: translateY(18px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+
+  /* ── HOME ── */
+  .quiz-pick {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .quiz-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 22px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface2);
+    cursor: pointer;
+    transition: all .2s;
+    text-align: left;
+  }
+  .quiz-row:hover { border-color: var(--accent); background: #1f2218; }
+  .quiz-row .qi { font-size: 1.6rem; width: 40px; text-align: center; flex-shrink:0; }
+  .quiz-row .qt { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; }
+  .quiz-row .qs { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+  .quiz-row .qa { margin-left: auto; color: var(--muted); font-size: 1.1rem; transition: color .2s; }
+  .quiz-row:hover .qa { color: var(--accent); }
+  .quiz-row.disabled { opacity: .35; cursor: default; pointer-events: none; }
+
+  /* ── INSTRUCTIONS ── */
+  .intro-box {
+    background: var(--surface2);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+    padding: 18px 20px;
+    font-size: .93rem;
+    line-height: 1.75;
+    color: #c8c4bc;
+    margin-bottom: 28px;
+    white-space: pre-wrap;
+  }
+  .sym-table {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .sym-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface2);
+  }
+  .sym-icon { font-size: 1.4rem; width: 30px; text-align:center; flex-shrink:0; }
+  .sym-pts { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; }
+  .sym-lbl { font-size: .78rem; color: var(--muted); }
+  .s3 { border-color: #3a9e50; } .s3 .sym-icon { color: #3a9e50; }
+  .s2 { border-color: #3a8e9e; } .s2 .sym-icon { color: #3a9e8e; }
+  .s1 { border-color: #9e8e3a; } .s1 .sym-icon { color: #c8b050; }
+  .s0 { border-color: #9e4a3a; } .s0 .sym-icon { color: #d46050; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Syne', sans-serif;
+    font-size: .95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+    letter-spacing: .3px;
+  }
+  .btn-accent { background: var(--accent); color: #0e0e0e; }
+  .btn-accent:hover { background: #d8ff70; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(200,240,96,.2); }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: auto;
+    padding: 10px 24px;
+    margin-top: 20px;
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── QUESTION ── */
+  .prog-wrap { height:4px; background:var(--border); border-radius:99px; margin-bottom:28px; overflow:hidden; }
+  .prog-fill  { height:100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius:99px; transition: width .5s ease; }
+  .q-count { text-align:center; font-size:.78rem; color:var(--muted); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:16px; }
+  .q-text {
+    text-align: center;
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 32px;
+  }
+  .answers { display:flex; flex-direction:column; gap:10px; }
+  .ans-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 15px 20px;
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    background: var(--surface2);
+    cursor: pointer;
+    transition: all .18s;
+    font-family: 'Instrument Sans', sans-serif;
+    color: var(--text);
+  }
+  .ans-btn:hover:not(:disabled) { border-color: var(--accent); background: #1e2214; }
+  .ans-btn .a-sym { font-size:1.2rem; width:28px; text-align:center; flex-shrink:0; }
+  .ans-btn .a-word { font-size:.98rem; font-weight:500; }
+  .ans-btn .a-pts  { margin-left:auto; font-size:.75rem; color:var(--muted); flex-shrink:0; }
+  .ans-btn.picked  { border-color:var(--accent); background:#1e2414; }
+  .ans-btn.picked .a-word { color:var(--accent); }
+
+  /* ── RESULT ── */
+  .score-center { text-align:center; padding: 28px 0 16px; }
+  .stars-line { font-size:1.6rem; letter-spacing:5px; display:block; margin-bottom:12px; animation: pop .4s ease both; }
+  @keyframes pop { from{transform:scale(.4);opacity:0} to{transform:scale(1);opacity:1} }
+  .score-big { font-family:'Syne',sans-serif; font-size:4.5rem; font-weight:800; line-height:1; }
+  .score-sub { color:var(--muted); font-size:1rem; margin-top:4px; }
+  .grade-chip {
+    display:inline-block; margin-top:12px;
+    padding: 5px 18px;
+    border-radius:99px;
+    font-family:'Syne',sans-serif; font-size:.82rem; font-weight:700;
+  }
+  .gA { background:#1e3a22; color:#6edb7e; }
+  .gB { background:#1a2e3a; color:#60c8d4; }
+  .gC { background:#3a2e1a; color:#d4aa60; }
+
+  /* ADVICE */
+  .section-title {
+    font-family:'Syne',sans-serif; font-weight:800; font-size:1.1rem;
+    text-align:center; margin-bottom:18px;
+    letter-spacing:-0.3px;
+  }
+  .advice-wrap { display:flex; gap:16px; align-items:flex-start; }
+  .advice-badge {
+    flex-shrink:0;
+    background:var(--accent); color:#0e0e0e;
+    font-family:'Syne',sans-serif; font-weight:800; font-size:1.3rem;
+    width:54px; height:54px;
+    border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .advice-bubble {
+    background:var(--surface2);
+    border:1px solid var(--border);
+    border-radius:0 12px 12px 12px;
+    padding:14px 18px;
+    font-size:.92rem; line-height:1.7; color:#c8c4bc;
+    flex:1;
+  }
+
+  /* AVERAGE */
+  .avg-block { margin-top:28px; padding-top:24px; border-top:1px solid var(--border); }
+  .avg-bar-wrap { position:relative; height:8px; background:var(--border); border-radius:99px; margin:14px 0 8px; }
+  .avg-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:99px; }
+  .avg-needle {
+    position:absolute; top:50%; transform:translate(-50%,-50%);
+    width:16px; height:16px;
+    background:white; border:2.5px solid var(--bg);
+    box-shadow:0 0 0 2px var(--accent2);
+    border-radius:50%;
+  }
+  .avg-ends { display:flex; justify-content:space-between; font-size:.75rem; color:var(--muted); margin-bottom:14px; }
+  .avg-sentence { font-size:.9rem; color:#c8c4bc; line-height:1.6; text-align:center; font-style:italic; }
+
+  .sep { height:1px; background:var(--border); margin:24px 0; }
+  .hidden { display:none !important; }
+
+  /* ── EDIT PANEL ── */
+  .edit-tabs { display:flex; gap:8px; margin-bottom:20px; }
+  .tab-btn {
+    flex:1; padding:10px; border:1px solid var(--border); border-radius:10px;
+    background:var(--surface2); color:var(--muted); font-family:'Syne',sans-serif;
+    font-size:.8rem; font-weight:700; cursor:pointer; transition:all .15s;
+  }
+  .tab-btn.active { border-color:var(--accent); color:var(--accent); background:#1a2010; }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+
+  .field-label { font-size:.78rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; margin-top:16px; }
+  textarea, input[type=text] {
+    width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:10px;
+    color:var(--text); font-family:'Instrument Sans',sans-serif; font-size:.9rem;
+    padding:12px 14px; resize:vertical; transition:border-color .15s;
+  }
+  textarea:focus, input[type=text]:focus { outline:none; border-color:var(--accent); }
+  textarea { min-height:70px; }
+
+  .q-editor { border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:14px; background:var(--surface2); }
+  .q-editor-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .q-num { font-family:'Syne',sans-serif; font-weight:700; font-size:.85rem; color:var(--accent); }
+  .del-btn {
+    background:transparent; border:1px solid #9e3a3a; color:#d46060;
+    border-radius:8px; padding:4px 12px; font-size:.78rem; cursor:pointer; transition:all .15s;
+  }
+  .del-btn:hover { background:#3a1a1a; }
+  .add-q-btn {
+    width:100%; padding:12px; background:transparent;
+    border:1px dashed var(--border); border-radius:12px;
+    color:var(--muted); font-family:'Syne',sans-serif; font-size:.85rem; font-weight:700;
+    cursor:pointer; transition:all .15s; margin-top:4px;
+  }
+  .add-q-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+  .ans-editor { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+  .ans-field { display:flex; flex-direction:column; gap:4px; }
+  .ans-field .sym-tag { font-size:.75rem; color:var(--muted); display:flex; align-items:center; gap:5px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ══ HOME ══ -->
+  <div id="s-home">
+    <h1 class="page-title">Quiz<em>Master</em></h1>
+    <div class="card">
+      <p style="color:var(--muted);font-size:.88rem;text-align:center">Choose a quiz to start</p>
+      <div class="quiz-pick">
+        <div class="quiz-row" onclick="goInstructions()">
+          <div class="qi">🌿</div>
+          <div>
+            <div class="qt" id="home-quiz-title">Lifestyle Quiz</div>
+            <div class="qs" id="home-quiz-sub">5 questions · discover your habits</div>
+          </div>
+          <span class="qa">→</span>
+        </div>
+        <div class="quiz-row disabled"><div class="qi">📐</div><div><div class="qt">Maths Quiz</div><div class="qs">Coming soon</div></div><span class="qa">→</span></div>
+        <div class="quiz-row disabled"><div class="qi">🌍</div><div><div class="qt">Geography Quiz</div><div class="qs">Coming soon</div></div><span class="qa">→</span></div>
+      </div>
+      <div style="margin-top:20px; display:flex; gap:10px;">
+        <button class="btn btn-ghost" style="flex:1" onclick="goEdit()">✏️ Edit quiz</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ INSTRUCTIONS ══ -->
+  <div id="s-instr" class="hidden">
+    <h1 class="page-title">Quiz<em>Master</em></h1>
+    <div class="card">
+      <div class="intro-box" id="instr-text"></div>
+      <div class="sym-table">
+        <div class="sym-row s0"><div class="sym-icon">○</div><div><div class="sym-pts">0 pts</div><div class="sym-lbl">Never</div></div></div>
+        <div class="sym-row s1"><div class="sym-icon">□</div><div><div class="sym-pts">1 pt</div><div class="sym-lbl">Sometimes</div></div></div>
+        <div class="sym-row s2"><div class="sym-icon">◇</div><div><div class="sym-pts">2 pts</div><div class="sym-lbl">Often</div></div></div>
+        <div class="sym-row s3"><div class="sym-icon">×</div><div><div class="sym-pts">3 pts</div><div class="sym-lbl">Always</div></div></div>
+      </div>
+      <button class="btn btn-accent" onclick="startQuiz()">Start →</button>
+    </div>
+  </div>
+
+  <!-- ══ QUESTION ══ -->
+  <div id="s-question" class="hidden">
+    <h1 class="page-title">Quiz<em>Master</em></h1>
+    <div class="card">
+      <div class="prog-wrap"><div class="prog-fill" id="prog"></div></div>
+      <div class="q-count" id="q-count"></div>
+      <div class="q-text" id="q-text"></div>
+      <div class="answers" id="answers"></div>
+    </div>
+  </div>
+
+  <!-- ══ RESULT ══ -->
+  <div id="s-result" class="hidden">
+    <h1 class="page-title">Your <em>Results</em></h1>
+    <div class="card">
+      <div class="score-center">
+        <span class="stars-line" id="r-stars"></span>
+        <div class="score-big" id="r-score">0</div>
+        <div class="score-sub" id="r-sub"></div>
+        <div class="grade-chip" id="r-chip"></div>
+      </div>
+      <div class="sep"></div>
+      <div class="section-title">Advice</div>
+      <div class="advice-wrap">
+        <div class="advice-bubble" id="r-advice"></div>
+        <div class="advice-badge" id="r-badge"></div>
+      </div>
+      <div class="avg-block">
+        <div class="section-title" style="margin-bottom:4px">Class Average</div>
+        <div class="avg-ends"><span>0</span><span id="r-avg-mid"></span><span id="r-avg-max"></span></div>
+        <div class="avg-bar-wrap">
+          <div class="avg-fill" id="r-avg-fill"></div>
+          <div class="avg-needle" id="r-avg-needle"></div>
+        </div>
+        <p class="avg-sentence" id="r-avg-sent"></p>
+      </div>
+      <div style="text-align:center">
+        <button class="btn btn-ghost" onclick="goHome()">← Back to home</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ EDIT ══ -->
+  <div id="s-edit" class="hidden">
+    <h1 class="page-title">Edit <em>Quiz</em></h1>
+    <div class="card">
+      <div class="edit-tabs">
+        <button class="tab-btn active" onclick="switchTab('t-general',this)">⚙ General</button>
+        <button class="tab-btn" onclick="switchTab('t-questions',this)">❓ Questions</button>
+        <button class="tab-btn" onclick="switchTab('t-advice',this)">💬 Advice</button>
+      </div>
+
+      <!-- TAB: GENERAL -->
+      <div class="tab-panel active" id="t-general">
+        <div class="field-label">Quiz title</div>
+        <input type="text" id="e-title" placeholder="e.g. Lifestyle Quiz">
+        <div class="field-label">Subtitle (home screen)</div>
+        <input type="text" id="e-sub" placeholder="e.g. 5 questions · discover your habits">
+        <div class="field-label">Instructions text</div>
+        <textarea id="e-instr" rows="5" placeholder="Explain how the quiz works..."></textarea>
+        <div class="field-label">Class average (for comparison bar)</div>
+        <input type="text" id="e-avg" placeholder="e.g. 8">
+      </div>
+
+      <!-- TAB: QUESTIONS -->
+      <div class="tab-panel" id="t-questions">
+        <div id="q-editors"></div>
+        <button class="add-q-btn" onclick="addQuestion()">+ Add a question</button>
+      </div>
+
+      <!-- TAB: ADVICE -->
+      <div class="tab-panel" id="t-advice">
+        <p style="font-size:.85rem;color:var(--muted);margin-bottom:18px;line-height:1.6">
+          Set a personalised advice for each score range.<br>
+          Ranges are calculated automatically based on the number of questions.
+        </p>
+        <div class="field-label" id="adv-label-low"></div>
+        <textarea id="e-adv-low" rows="4" placeholder="Advice for low scores..."></textarea>
+        <div class="field-label" id="adv-label-mid"></div>
+        <textarea id="e-adv-mid" rows="4" placeholder="Advice for mid scores..."></textarea>
+        <div class="field-label" id="adv-label-high"></div>
+        <textarea id="e-adv-high" rows="4" placeholder="Advice for high scores..."></textarea>
+      </div>
+
+      <div class="sep"></div>
+      <button class="btn btn-accent" onclick="saveAndGoHome()">Save & return home ✓</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ════════════════════════════════════════════
+//  CONFIG  — edit this object OR use the UI
+// ════════════════════════════════════════════
+let CONFIG = {
+  title: "Lifestyle Quiz",
+  subtitle: "5 questions · discover your habits",
+  instructions: "Answer honestly — there are no right or wrong answers!\nFor each question pick how often the statement applies to you.\nThe symbols go from ○ (never) to × (always).",
+  classAverage: 8,
+  questions: [
+    {
+      text: "I drink at least 1.5L of water per day.",
+      answers: ["Never", "Sometimes", "Often", "Always"]
+    },
+    {
+      text: "I exercise or do a physical activity.",
+      answers: ["Never", "Sometimes", "Often", "Always"]
+    },
+    {
+      text: "I get 7–9 hours of sleep each night.",
+      answers: ["Never", "Sometimes", "Often", "Always"]
+    },
+    {
+      text: "I eat fruits and vegetables every day.",
+      answers: ["Never", "Sometimes", "Often", "Always"]
+    },
+    {
+      text: "I take time to relax and do something I enjoy.",
+      answers: ["Never", "Sometimes", "Often", "Always"]
+    }
+  ],
+  advice: {
+    low:  "Your lifestyle needs some attention. Start small: try drinking more water or going to bed 30 minutes earlier each night. Small habits add up!",
+    mid:  "You have a decent base! There are a few areas where you could improve. Identify what you do well and build on it step by step.",
+    high: "Excellent! You have very healthy habits. Keep it up and inspire those around you — your consistency is your strength."
+  }
+};
+
+// ════════════════════════════════════════════
+//  SYMBOLS: always ○ □ ◇ × (0,1,2,3 pts)
+// ════════════════════════════════════════════
+const SYMS  = ["○","□","◇","×"];
+const PTS   = [0, 1, 2, 3];
+
+// ════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════
+let curQ = 0, totalScore = 0;
+
+// ════════════════════════════════════════════
+//  NAVIGATION
+// ════════════════════════════════════════════
+const screens = ["s-home","s-instr","s-question","s-result","s-edit"];
+function show(id) {
+  screens.forEach(s => document.getElementById(s).classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+  window.scrollTo({ top:0, behavior:"smooth" });
+}
+function goHome()         { show("s-home"); }
+function goInstructions() { loadInstructions(); show("s-instr"); }
+function goEdit()         { loadEditPanel(); show("s-edit"); }
+
+// ════════════════════════════════════════════
+//  INSTRUCTIONS
+// ════════════════════════════════════════════
+function loadInstructions() {
+  document.getElementById("instr-text").textContent = CONFIG.instructions;
+}
+
+// ════════════════════════════════════════════
+//  QUIZ
+// ════════════════════════════════════════════
+function startQuiz() {
+  curQ = 0; totalScore = 0;
+  renderQuestion();
+  show("s-question");
+}
+
+function renderQuestion() {
+  const q   = CONFIG.questions[curQ];
+  const max = CONFIG.questions.length;
+  document.getElementById("q-count").textContent = `Question ${curQ+1} / ${max}`;
+  document.getElementById("q-text").textContent   = q.text;
+  document.getElementById("prog").style.width     = (curQ / max * 100) + "%";
+
+  const box = document.getElementById("answers");
+  box.innerHTML = "";
+  // always ○ □ ◇ × order
+  SYMS.forEach((sym, i) => {
+    const btn = document.createElement("button");
+    btn.className = "ans-btn";
+    const word = q.answers[i] || SYMS[i];
+    btn.innerHTML = `
+      <span class="a-sym">${sym}</span>
+      <span class="a-word">${word}</span>
+      <span class="a-pts">${PTS[i]} pt${PTS[i]!==1?"s":""}</span>`;
+    btn.onclick = () => pick(btn, PTS[i], box);
+    box.appendChild(btn);
+  });
+}
+
+function pick(btn, pts, box) {
+  box.querySelectorAll(".ans-btn").forEach(b => b.disabled = true);
+  btn.classList.add("picked");
+  totalScore += pts;
+  setTimeout(() => {
+    curQ++;
+    if (curQ < CONFIG.questions.length) renderQuestion();
+    else showResult();
+  }, 550);
+}
+
+// ════════════════════════════════════════════
+//  RESULT
+// ════════════════════════════════════════════
+function showResult() {
+  const maxPts = CONFIG.questions.length * 3;
+  const pct    = totalScore / maxPts;
+
+  // Stars
+  const starsFull = pct >= .9 ? 5 : pct >= .72 ? 4 : pct >= .5 ? 3 : pct >= .3 ? 2 : 1;
+  document.getElementById("r-stars").textContent = "★".repeat(starsFull) + "☆".repeat(5-starsFull);
+  document.getElementById("r-score").textContent = totalScore;
+  document.getElementById("r-sub").textContent   = `/ ${maxPts} points`;
+
+  // Grade + chip
+  let grade, chipClass;
+  if (pct >= .7)       { grade = "A";  chipClass = "gA"; }
+  else if (pct >= .4)  { grade = "B";  chipClass = "gB"; }
+  else                 { grade = "C";  chipClass = "gC"; }
+  const chip = document.getElementById("r-chip");
+  chip.textContent = grade;
+  chip.className   = "grade-chip " + chipClass;
+  document.getElementById("r-badge").textContent = grade;
+
+  // Advice: thresholds based on maxPts
+  // low: 0 – 33%, mid: 34 – 66%, high: 67%+
+  let advText;
+  if      (pct < 0.34) advText = CONFIG.advice.low;
+  else if (pct < 0.67) advText = CONFIG.advice.mid;
+  else                 advText = CONFIG.advice.high;
+  document.getElementById("r-advice").textContent = advText;
+
+  // Average bar
+  const avg    = Number(CONFIG.classAverage) || Math.round(maxPts * .5);
+  const avgPct = Math.min(avg / maxPts * 100, 100);
+  const myPct  = Math.min(pct * 100, 100);
+  document.getElementById("r-avg-fill").style.width = myPct + "%";
+  document.getElementById("r-avg-needle").style.left = avgPct + "%";
+  document.getElementById("r-avg-mid").textContent  = `Avg: ${avg}`;
+  document.getElementById("r-avg-max").textContent  = maxPts;
+
+  let avgSent;
+  if      (totalScore > avg + 2) avgSent = "You are well above the class average — great lifestyle habits!";
+  else if (totalScore > avg)     avgSent = "You are slightly above the class average — keep it up!";
+  else if (totalScore === avg)   avgSent = "You are right at the class average.";
+  else if (totalScore >= avg-2)  avgSent = "You are slightly below the class average — a few small changes can help!";
+  else                           avgSent = "You are below the class average — there's room to grow, and that's okay!";
+  document.getElementById("r-avg-sent").textContent = avgSent;
+
+  document.getElementById("prog").style.width = "100%";
+  show("s-result");
+}
+
+// ════════════════════════════════════════════
+//  EDIT PANEL
+// ════════════════════════════════════════════
+function switchTab(id, btn) {
+  document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  btn.classList.add("active");
+}
+
+function loadEditPanel() {
+  document.getElementById("e-title").value  = CONFIG.title;
+  document.getElementById("e-sub").value    = CONFIG.subtitle;
+  document.getElementById("e-instr").value  = CONFIG.instructions;
+  document.getElementById("e-avg").value    = CONFIG.classAverage;
+  document.getElementById("e-adv-low").value  = CONFIG.advice.low;
+  document.getElementById("e-adv-mid").value  = CONFIG.advice.mid;
+  document.getElementById("e-adv-high").value = CONFIG.advice.high;
+
+  // Advice range labels
+  const maxPts = CONFIG.questions.length * 3;
+  const lo = Math.floor(maxPts * 0.33);
+  const hi = Math.floor(maxPts * 0.66);
+  document.getElementById("adv-label-low").textContent  = `Low score  (0 – ${lo} pts)`;
+  document.getElementById("adv-label-mid").textContent  = `Mid score  (${lo+1} – ${hi} pts)`;
+  document.getElementById("adv-label-high").textContent = `High score (${hi+1} – ${maxPts} pts)`;
+
+  renderQEditors();
+}
+
+function renderQEditors() {
+  const box = document.getElementById("q-editors");
+  box.innerHTML = "";
+  CONFIG.questions.forEach((q, i) => {
+    const div = document.createElement("div");
+    div.className = "q-editor";
+    div.innerHTML = `
+      <div class="q-editor-head">
+        <span class="q-num">Question ${i+1}</span>
+        <button class="del-btn" onclick="deleteQuestion(${i})">Delete</button>
+      </div>
+      <div class="field-label">Question text</div>
+      <textarea data-qi="${i}" data-field="text" rows="2">${q.text}</textarea>
+      <div class="field-label">Answer words (in order: ○ □ ◇ ×)</div>
+      <div class="ans-editor">
+        ${SYMS.map((sym,j) => `
+          <div class="ans-field">
+            <span class="sym-tag">${sym} · ${PTS[j]}pt</span>
+            <input type="text" data-qi="${i}" data-ai="${j}" value="${q.answers[j]||''}" placeholder="${sym}">
+          </div>`).join("")}
+      </div>`;
+    box.appendChild(div);
+  });
+}
+
+function addQuestion() {
+  CONFIG.questions.push({
+    text: "New question...",
+    answers: ["Never","Sometimes","Often","Always"]
+  });
+  renderQEditors();
+  // scroll to new
+  const editors = document.querySelectorAll(".q-editor");
+  editors[editors.length-1].scrollIntoView({ behavior:"smooth", block:"center" });
+  // update advice labels
+  const maxPts = CONFIG.questions.length * 3;
+  const lo = Math.floor(maxPts * 0.33);
+  const hi = Math.floor(maxPts * 0.66);
+  document.getElementById("adv-label-low").textContent  = `Low score  (0 – ${lo} pts)`;
+  document.getElementById("adv-label-mid").textContent  = `Mid score  (${lo+1} – ${hi} pts)`;
+  document.getElementById("adv-label-high").textContent = `High score (${hi+1} – ${maxPts} pts)`;
+}
+
+function deleteQuestion(i) {
+  if (CONFIG.questions.length <= 1) return alert("You need at least 1 question.");
+  CONFIG.questions.splice(i, 1);
+  renderQEditors();
+}
+
+function saveAndGoHome() {
+  // Read general
+  CONFIG.title        = document.getElementById("e-title").value.trim() || CONFIG.title;
+  CONFIG.subtitle     = document.getElementById("e-sub").value.trim()   || CONFIG.subtitle;
+  CONFIG.instructions = document.getElementById("e-instr").value.trim() || CONFIG.instructions;
+  CONFIG.classAverage = Number(document.getElementById("e-avg").value)  || CONFIG.classAverage;
+  CONFIG.advice.low   = document.getElementById("e-adv-low").value.trim()  || CONFIG.advice.low;
+  CONFIG.advice.mid   = document.getElementById("e-adv-mid").value.trim()  || CONFIG.advice.mid;
+  CONFIG.advice.high  = document.getElementById("e-adv-high").value.trim() || CONFIG.advice.high;
+
+  // Read questions
+  document.querySelectorAll("textarea[data-qi]").forEach(el => {
+    const qi = +el.dataset.qi;
+    CONFIG.questions[qi].text = el.value;
+  });
+  document.querySelectorAll("input[data-qi]").forEach(el => {
+    const qi = +el.dataset.qi;
+    const ai = +el.dataset.ai;
+    CONFIG.questions[qi].answers[ai] = el.value;
+  });
+
+  // Update home labels
+  document.getElementById("home-quiz-title").textContent = CONFIG.title;
+  document.getElementById("home-quiz-sub").textContent   = CONFIG.subtitle;
+
+  goHome();
+}
+</script>
+</body>
+</html>
